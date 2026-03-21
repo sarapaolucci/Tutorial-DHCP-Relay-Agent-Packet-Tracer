@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tutorial Packet Tracer – Rete DHCP con Router 2911</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface-alt: #f0eeea;
+    --border: #d8d4cc;
+    --accent: #1a4fa0;
+    --accent-light: #e8eef8;
+    --accent2: #c0392b;
+    --accent2-light: #fdf0ef;
+    --text: #1c1a17;
+    --text-muted: #6b6560;
+    --text-light: #9e9890;
+    --step-bg: #1a4fa0;
+    --code-bg: #1e2030;
+    --code-text: #c8d3f5;
+    --green: #1a7a4a;
+    --green-light: #e8f5ee;
+    --amber: #9a6200;
+    --amber-light: #fef3e2;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --display: 'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+  .header-logo {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.9);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .header-logo span {
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+  nav {
+    display: flex;
+    gap: 1.5rem;
+  }
+  nav a {
+    color: rgba(255,255,255,0.78);
+    text-decoration: none;
+    font-family: var(--display);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: #fff; }
+
+  /* ── Hero ── */
+  .hero {
+    background: var(--accent);
+    background-image: 
+      radial-gradient(ellipse at 80% 50%, rgba(255,255,255,0.06) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px);
+    color: #fff;
+    padding: 4rem 2rem 3.5rem;
+    border-bottom: 3px solid rgba(255,255,255,0.12);
+  }
+  .hero-inner {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .hero-tag::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 1px;
+    background: rgba(255,255,255,0.4);
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.01em;
+  }
+  .hero-subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.82);
+    max-width: 600px;
+    margin-bottom: 2rem;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+  .meta-value {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.95);
+  }
+
+  /* ── Layout ── */
+  .layout {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: sticky;
+    top: 80px;
+  }
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .toc-header {
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .toc ul {
+    list-style: none;
+    padding: 0.5rem 0;
+  }
+  .toc li a {
+    display: block;
+    padding: 0.4rem 1rem;
+    font-family: var(--display);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+  .toc li a:hover {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .toc li a .step-num {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-light);
+    margin-right: 0.35rem;
+  }
+
+  /* ── Content ── */
+  .content { min-width: 0; }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 3.5rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .step-badge {
+    background: var(--step-bg);
+    color: #fff;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    margin-top: 0.35rem;
+    letter-spacing: 0.08em;
+  }
+  h2 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 1.55rem;
+    line-height: 1.2;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin: 1.5rem 0 0.6rem;
+    letter-spacing: -0.01em;
+  }
+  p { margin-bottom: 1rem; }
+  strong { font-weight: 600; }
+
+  /* ── Info Box ── */
+  .box {
+    border-radius: 6px;
+    padding: 1rem 1.2rem;
+    margin: 1.2rem 0;
+    border-left: 4px solid;
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+  .box.info {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: #1a3a80;
+  }
+  .box.warning {
+    background: var(--amber-light);
+    border-color: #e09000;
+    color: var(--amber);
+  }
+  .box.success {
+    background: var(--green-light);
+    border-color: var(--green);
+    color: #145c37;
+  }
+  .box.note {
+    background: var(--accent2-light);
+    border-color: var(--accent2);
+    color: #8b1a14;
+  }
+  .box-title {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  /* ── Code / IP ── */
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 0.15em 0.45em;
+    border-radius: 4px;
+  }
+  .ip-placeholder {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: #fff8e1;
+    color: #8a5700;
+    border: 1.5px dashed #c8940a;
+    padding: 0.15em 0.5em;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  /* ── Image Placeholder ── */
+  .img-placeholder {
+    width: 100%;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 2.5rem 2rem;
+    margin: 1.5rem 0;
+    color: var(--text-light);
+    min-height: 200px;
+  }
+  .img-placeholder .img-icon {
+    font-size: 2.5rem;
+    opacity: 0.4;
+  }
+  .img-placeholder .img-label {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .img-placeholder .img-desc {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-light);
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.5;
+  }
+  .img-placeholder .img-num {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 0.2em 0.8em;
+    color: var(--text-light);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 1.2rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+  thead tr {
+    background: var(--accent);
+    color: #fff;
+  }
+  thead th {
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  tbody tr:nth-child(even) { background: var(--surface-alt); }
+  tbody tr:nth-child(odd) { background: var(--surface); }
+  tbody tr:hover { background: var(--accent-light); }
+  tbody td {
+    padding: 0.65rem 1rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--serif);
+    vertical-align: middle;
+  }
+  tbody td:first-child {
+    font-family: var(--display);
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.85rem;
+  }
+
+  /* ── Steps list ── */
+  ol.steps {
+    list-style: none;
+    counter-reset: stepcount;
+    padding: 0;
+    margin: 1rem 0;
+  }
+  ol.steps li {
+    counter-increment: stepcount;
+    position: relative;
+    padding: 0.7rem 1rem 0.7rem 3rem;
+    margin-bottom: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.93rem;
+    line-height: 1.6;
+  }
+  ol.steps li::before {
+    content: counter(stepcount);
+    position: absolute;
+    left: 0.75rem;
+    top: 0.7rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 0.72rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  ol.steps li code { font-size: 0.82em; }
+
+  /* ── Topology diagram ── */
+  .topology {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .topo-svg-container {
+    display: flex;
+    justify-content: center;
+  }
+  svg.topo { font-family: var(--mono); }
+
+  /* ── Config block ── */
+  .config-block {
+    background: var(--code-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1.2rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  .config-header {
+    background: #151726;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .config-title {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: #7c8aba;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .config-dots {
+    display: flex;
+    gap: 5px;
+  }
+  .config-dots span {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .config-dots span:nth-child(1) { background: #ff5f57; }
+  .config-dots span:nth-child(2) { background: #febc2e; }
+  .config-dots span:nth-child(3) { background: #28c840; }
+  pre {
+    margin: 0;
+    padding: 1.2rem 1.4rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--code-text);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .cmd-comment { color: #636d9e; font-style: italic; }
+  .cmd-prompt  { color: #82aaff; }
+  .cmd-key     { color: #c3e88d; }
+  .cmd-val     { color: #f78c6c; }
+  .cmd-ip      { color: #ffcb6b; font-weight: 500; }
+
+  /* ── Checklist ── */
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.92rem;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: '☐';
+    font-size: 1.1rem;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── Footer ── */
+  footer {
+    background: var(--text);
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 2rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    margin-top: 4rem;
+  }
+  footer strong { color: rgba(255,255,255,0.8); }
+
+  /* ── Responsive ── */
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-logo">
+      🌐 Reti &amp; Sistemi <span>CLASSE 4</span>
+    </div>
+    <nav>
+      <a href="#obiettivi">Obiettivi</a>
+      <a href="#topologia">Topologia</a>
+      <a href="#configurazione">Configurazione</a>
+      <a href="#test">Test</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <p class="hero-tag">Tutorial Pratico · Cisco Packet Tracer</p>
+    <h1>Rete DHCP <br/>(Relay-Agent)<br/> con Router 2911</h1>
+    <p class="hero-subtitle">Implementazione e test di una rete con server DHCP centralizzato, routing tra due subnet e DHCP relay su router Cisco 2911.</p>
+    <div class="hero-meta">
+      <div class="meta-item"><span class="meta-label">Livello</span><span class="meta-value">Classe 4 – Sistemi</span></div>
+      <div class="meta-item"><span class="meta-label">Durata</span><span class="meta-value">≈ 90 minuti</span></div>
+      <div class="meta-item"><span class="meta-label">Strumento</span><span class="meta-value">Packet Tracer 8.x</span></div>
+      <div class="meta-item"><span class="meta-label">Difficoltà</span><span class="meta-value">⚡⚡⚡ Intermedio</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="toc">
+      <div class="toc-header">Indice del Tutorial</div>
+      <ul>
+        <li><a href="#obiettivi"><span class="step-num">00</span> Obiettivi &amp; Prerequisiti</a></li>
+        <li><a href="#topologia"><span class="step-num">01</span> Topologia di rete</a></li>
+        <li><a href="#step02"><span class="step-num">02</span> Creazione progetto PT</a></li>
+        <li><a href="#step03"><span class="step-num">03</span> Aggiunta dispositivi</a></li>
+        <li><a href="#step04"><span class="step-num">04</span> Cablaggio</a></li>
+        <li><a href="#step05"><span class="step-num">05</span> Config Server DHCP</a></li>
+        <li><a href="#step06"><span class="step-num">06</span> Config Router 2911</a></li>
+        <li><a href="#step07"><span class="step-num">07</span> DHCP Relay (ip helper)</a></li>
+        <li><a href="#step08"><span class="step-num">08</span> Config PC Rete 1</a></li>
+        <li><a href="#step09"><span class="step-num">09</span> Config PC Rete 2</a></li>
+        <li><a href="#test"><span class="step-num">10</span> Test e verifica</a></li>
+        <li><a href="#riepilogo"><span class="step-num">11</span> Riepilogo</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ══ OBIETTIVI ══ -->
+    <section class="section" id="obiettivi">
+      <div class="section-header">
+        <span class="step-badge">00</span>
+        <h2>Obiettivi &amp; Prerequisiti</h2>
+      </div>
+
+      <p>Al termine di questo tutorial sarai in grado di:</p>
+      <ul class="checklist">
+        <li>Progettare e costruire una topologia a due reti in Packet Tracer con router, switch e PC.</li>
+        <li>Configurare un server DHCP che assegni indirizzi dinamici a tutti i client della rete.</li>
+        <li>Configurare le interfacce del router Cisco 2911 con indirizzamento IPv4.</li>
+        <li>Abilitare il <strong>DHCP relay</strong> (<code>ip helper-address</code>) per far raggiungere il DHCP server ai client di una subnet remota.</li>
+        <li>Verificare la corretta assegnazione degli indirizzi con strumenti come <code>ipconfig</code> e <code>ping</code>.</li>
+      </ul>
+
+      <h3>Prerequisiti</h3>
+      <p>Prima di iniziare assicurati di conoscere i seguenti concetti:</p>
+      <ul class="checklist">
+        <li>Fondamenti del modello TCP/IP e indirizzi IPv4 con notazione CIDR.</li>
+        <li>Concetto di subnet, indirizzo di rete e broadcast.</li>
+        <li>Funzionamento del protocollo DHCP (DORA: Discover, Offer, Request, Acknowledge).</li>
+        <li>Interfaccia base di Cisco Packet Tracer (aggiunta dispositivi, cablaggio, CLI).</li>
+      </ul>
+
+      <div class="box info">
+        <div class="box-title">🔵 Nota sulle versioni</div>
+        Il tutorial è stato sviluppato con <strong>Cisco Packet Tracer 8.x</strong>. Le interfacce grafiche possono variare leggermente nelle versioni precedenti, ma i comandi CLI rimangono identici.
+      </div>
+    </section>
+
+    <!-- ══ TOPOLOGIA ══ -->
+    <section class="section" id="topologia">
+      <div class="section-header">
+        <span class="step-badge">01</span>
+        <h2>Topologia di rete</h2>
+      </div>
+
+      <p>La rete da realizzare è composta da due subnet separate e connesse da un unico router. Il server DHCP si trova sulla Rete 1 e serve dinamicamente i client di entrambe le reti grazie al relay configurato sull'interfaccia del router verso la Rete 2.</p>
+
+      <!-- SVG TOPOLOGY DIAGRAM -->
+      <div class="topology">
+        <div class="topo-svg-container">
+          <svg class="topo" width="740" height="340" viewBox="0 0 740 340" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                <path d="M1,1 L7,4 L1,7 Z" fill="#888"/>
+              </marker>
+            </defs>
+
+            <!-- RETE 1 BG -->
+            <rect x="10" y="20" width="290" height="300" rx="10" fill="#e8eef8" stroke="#1a4fa0" stroke-width="1.5" stroke-dasharray="6,4"/>
+            <text x="24" y="42" font-family="'IBM Plex Mono'" font-size="11" font-weight="500" fill="#1a4fa0" letter-spacing="0.08em">RETE 1 — 192.168.10.0/24</text>
+
+            <!-- RETE 2 BG -->
+            <rect x="440" y="20" width="290" height="300" rx="10" fill="#fef3e2" stroke="#e09000" stroke-width="1.5" stroke-dasharray="6,4"/>
+            <text x="454" y="42" font-family="'IBM Plex Mono'" font-size="11" font-weight="500" fill="#9a6200" letter-spacing="0.08em">RETE 2 — 192.168.20.0/24</text>
+
+            <!-- ROUTER (center) -->
+            <rect x="316" y="130" width="108" height="56" rx="8" fill="#1a4fa0" stroke="#0e3080" stroke-width="2"/>
+            <text x="370" y="153" text-anchor="middle" font-family="'Syne'" font-size="12" font-weight="700" fill="white">Router</text>
+            <text x="370" y="169" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="9.5" fill="rgba(255,255,255,0.8)">Cisco 2911</text>
+            <!-- Router ports -->
+            <rect x="305" y="148" width="12" height="18" rx="2" fill="#82aaff"/>
+            <rect x="423" y="148" width="12" height="18" rx="2" fill="#ffcb6b"/>
+            <text x="303" y="182" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8.5" fill="#1a4fa0">G0/0</text>
+            <text x="437" y="182" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8.5" fill="#9a6200">G0/1</text>
+
+            <!-- SWITCH 1 -->
+            <rect x="105" y="185" width="100" height="40" rx="6" fill="#1a4fa0" stroke="#0e3080" stroke-width="1.5"/>
+            <text x="155" y="201" text-anchor="middle" font-family="'Syne'" font-size="11" font-weight="700" fill="white">Switch 1</text>
+            <text x="155" y="216" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8.5" fill="rgba(255,255,255,0.75)">2960</text>
+
+            <!-- SWITCH 2 -->
+            <rect x="535" y="185" width="100" height="40" rx="6" fill="#e09000" stroke="#b87000" stroke-width="1.5"/>
+            <text x="585" y="201" text-anchor="middle" font-family="'Syne'" font-size="11" font-weight="700" fill="white">Switch 2</text>
+            <text x="585" y="216" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8.5" fill="rgba(255,255,255,0.8)">2960</text>
+
+            <!-- PC1 -->
+            <rect x="40" y="270" width="72" height="36" rx="5" fill="white" stroke="#1a4fa0" stroke-width="1.5"/>
+            <text x="76" y="285" text-anchor="middle" font-family="'Syne'" font-size="10" font-weight="700" fill="#1a4fa0">PC-1</text>
+            <text x="76" y="298" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="7.5" fill="#6b6560">DHCP</text>
+
+            <!-- PC2 -->
+            <rect x="128" y="270" width="72" height="36" rx="5" fill="white" stroke="#1a4fa0" stroke-width="1.5"/>
+            <text x="164" y="285" text-anchor="middle" font-family="'Syne'" font-size="10" font-weight="700" fill="#1a4fa0">PC-2</text>
+            <text x="164" y="298" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="7.5" fill="#6b6560">DHCP</text>
+
+            <!-- SERVER DHCP -->
+            <rect x="40" y="70" width="92" height="46" rx="6" fill="white" stroke="#1a7a4a" stroke-width="2"/>
+            <text x="86" y="89" text-anchor="middle" font-family="'Syne'" font-size="10" font-weight="700" fill="#1a7a4a">DHCP Server</text>
+            <text x="86" y="105" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8" fill="#6b6560">192.168.10.2</text>
+
+            <!-- PC3 -->
+            <rect x="510" y="270" width="72" height="36" rx="5" fill="white" stroke="#e09000" stroke-width="1.5"/>
+            <text x="546" y="285" text-anchor="middle" font-family="'Syne'" font-size="10" font-weight="700" fill="#9a6200">PC-3</text>
+            <text x="546" y="298" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="7.5" fill="#6b6560">DHCP</text>
+
+            <!-- PC4 -->
+            <rect x="598" y="270" width="72" height="36" rx="5" fill="white" stroke="#e09000" stroke-width="1.5"/>
+            <text x="634" y="285" text-anchor="middle" font-family="'Syne'" font-size="10" font-weight="700" fill="#9a6200">PC-4</text>
+            <text x="634" y="298" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="7.5" fill="#6b6560">DHCP</text>
+
+            <!-- Cables -->
+            <!-- Server → Switch1 -->
+            <line x1="86" y1="116" x2="140" y2="185" stroke="#1a7a4a" stroke-width="2" stroke-dasharray="5,3"/>
+            <!-- PC1 → Switch1 -->
+            <line x1="76" y1="270" x2="140" y2="225" stroke="#1a4fa0" stroke-width="2"/>
+            <!-- PC2 → Switch1 -->
+            <line x1="164" y1="270" x2="164" y2="225" stroke="#1a4fa0" stroke-width="2"/>
+            <!-- Switch1 → Router -->
+            <line x1="205" y1="205" x2="305" y2="162" stroke="#444" stroke-width="2.5"/>
+            <!-- Router → Switch2 -->
+            <line x1="435" y1="162" x2="535" y2="205" stroke="#444" stroke-width="2.5"/>
+            <!-- PC3 → Switch2 -->
+            <line x1="546" y1="270" x2="570" y2="225" stroke="#e09000" stroke-width="2"/>
+            <!-- PC4 → Switch2 -->
+            <line x1="634" y1="270" x2="610" y2="225" stroke="#e09000" stroke-width="2"/>
+
+            <!-- IP labels on router ports -->
+            <text x="265" y="148" font-family="'IBM Plex Mono'" font-size="8" fill="#1a4fa0">192.168.10.1</text>
+            <text x="438" y="148" font-family="'IBM Plex Mono'" font-size="8" fill="#9a6200">192.168.20.1</text>
+
+            <!-- DHCP Relay arrow -->
+            <path d="M435 158 Q 520 80 535 185" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="4,3" fill="none" marker-end="url(#arr)"/>
+            <text x="500" y="108" font-family="'IBM Plex Mono'" font-size="8.5" fill="#c0392b" text-anchor="middle">ip helper-address</text>
+            <text x="500" y="119" font-family="'IBM Plex Mono'" font-size="8.5" fill="#c0392b" text-anchor="middle">192.168.10.2</text>
+          </svg>
+        </div>
+      </div>
+
+      <h3>Piano di indirizzamento</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Dispositivo</th>
+            <th>Interfaccia</th>
+            <th>Indirizzo IP</th>
+            <th>Subnet Mask</th>
+            <th>Gateway</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>DHCP Server</td>
+            <td>FastEthernet0</td>
+            <td><code>192.168.10.2</code></td>
+            <td><code>255.255.255.0</code></td>
+            <td><code>192.168.10.1</code></td>
+          </tr>
+          <tr>
+            <td>Router 2911</td>
+            <td>GigabitEthernet0/0</td>
+            <td><code>192.168.10.1</code></td>
+            <td><code>255.255.255.0</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Router 2911</td>
+            <td>GigabitEthernet0/1</td>
+            <td><code>192.168.20.1</code></td>
+            <td><code>255.255.255.0</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>PC-1, PC-2</td>
+            <td>FastEthernet0</td>
+            <td><em>Dinamico DHCP</em></td>
+            <td><code>255.255.255.0</code></td>
+            <td><code>192.168.10.1</code></td>
+          </tr>
+          <tr>
+            <td>PC-3, PC-4</td>
+            <td>FastEthernet0</td>
+            <td><em>Dinamico DHCP</em></td>
+            <td><code>255.255.255.0</code></td>
+            <td><code>192.168.20.1</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Scope DHCP</h3>
+      <table>
+        <thead>
+          <tr><th>Parametro</th><th>Valore</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Pool Name</td><td><code>POOL_LAN</code></td></tr>
+          <tr><td>Start Address</td><td><code>192.168.10.16</code></td></tr>
+          <tr><td>Max. Indirizzi</td><td><code>16</code> (fino a <code>192.168.10.31</code>)</td></tr>
+          <tr><td>Subnet Mask</td><td><code>255.255.255.0</code></td></tr>
+          <tr><td>Default Gateway Rete 1</td><td><code>192.168.10.1</code></td></tr>
+          <tr><td>Default Gateway Rete 2</td><td><code>192.168.20.1</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="box warning">
+        <div class="box-title">⚠️ Attenzione agli IP esclusi</div>
+        Gli indirizzi <code>192.168.10.1</code> (gateway router) e <code>192.168.10.2</code> (server DHCP) si trovano fuori dallo scope (<code>.16</code> – <code>.31</code>), quindi non vengono assegnati dinamicamente. Non è necessario configurare esclusioni manuali.
+      </div>
+    </section>
+
+    <!-- ══ STEP 02 ══ -->
+    <section class="section" id="step02">
+      <div class="section-header">
+        <span class="step-badge">02</span>
+        <h2>Creazione del progetto in Packet Tracer</h2>
+      </div>
+
+      <ol class="steps">
+        <li>Avvia <strong>Cisco Packet Tracer</strong>. Nella schermata iniziale clicca su <strong>File → New</strong> (o premi <code>Ctrl+N</code>) per creare un nuovo progetto vuoto.</li>
+        <li>Vai su <strong>File → Save As</strong> e salva il file con un nome significativo, ad esempio <code>rete_dhcp_relay.pkt</code>, in una cartella dedicata al tuo lavoro.</li>
+        <li>Verifica che la modalità attiva sia <strong>Realtime Mode</strong> (in basso a destra, l'icona con l'orologio verde). Non usare la Simulation Mode in questa fase.</li>
+      </ol>
+
+      <div class="img-placeholder">
+        <img src = "Schermata_vuota.png">
+      </div>
+    </section>
+
+    <!-- ══ STEP 03 ══ -->
+    <section class="section" id="step03">
+      <div class="section-header">
+        <span class="step-badge">03</span>
+        <h2>Aggiunta dei dispositivi al workspace</h2>
+      </div>
+
+      <p>Tutti i dispositivi si trovano nella barra in basso di Packet Tracer, suddivisi per categoria. Trascina ciascun dispositivo nell'area di lavoro posizionandolo in modo da rispettare la topologia mostrata nella sezione 01.</p>
+
+      <h3>Dispositivi da aggiungere</h3>
+      <table>
+        <thead>
+          <tr><th>Dispositivo</th><th>Categoria PT</th><th>Modello</th><th>Quantità</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Router</td><td>Network Devices → Routers</td><td>2911</td><td>1</td></tr>
+          <tr><td>Switch</td><td>Network Devices → Switches</td><td>2960 (o generico)</td><td>2</td></tr>
+          <tr><td>PC</td><td>End Devices → End Devices</td><td>PC generico</td><td>4</td></tr>
+          <tr><td>Server DHCP</td><td>End Devices → End Devices</td><td>Server generico</td><td>1</td></tr>
+        </tbody>
+      </table>
+
+      <ol class="steps">
+        <li>Seleziona la categoria <strong>Routers</strong> nella barra in basso a sinistra, poi trascina un <strong>2911</strong> al centro del workspace.</li>
+        <li>Seleziona la categoria <strong>Switches</strong> e trascina due switch: posiziona <strong>Switch 1</strong> a sinistra del router e <strong>Switch 2</strong> a destra.</li>
+        <li>Seleziona <strong>End Devices</strong> e trascina 4 PC: 2 collegati logicamente alla Rete 1 (sinistra) e 2 alla Rete 2 (destra).</li>
+        <li>Sempre da End Devices trascina un <strong>Server</strong> e posizionalo vicino allo Switch 1 (Rete 1).</li>
+        <li>Rinomina i dispositivi facendo <strong>doppio clic</strong> sull'etichetta: usa i nomi <em>Router0</em>, <em>Switch1</em>, <em>Switch2</em>, <em>PC-1</em>, <em>PC-2</em>, <em>PC-3</em>, <em>PC-4</em>, <em>DHCP-Server</em>.</li>
+      </ol>
+
+      <div class="img-placeholder">
+        <img src = "topologia.png">
+      </div>
+    </section>
+
+    <!-- ══ STEP 04 ══ -->
+    <section class="section" id="step04">
+      <div class="section-header">
+        <span class="step-badge">04</span>
+        <h2>Cablaggio della rete</h2>
+      </div>
+
+      <p>Per collegare i dispositivi usa il tipo di cavo corretto. In Packet Tracer seleziona il cavo dalla barra in basso (icona del fulmine/cavo), poi clicca sul primo dispositivo scegliendo la porta e poi sul secondo.</p>
+
+      <div class="box info">
+        <div class="box-title">🔵 Cavo da usare</div>
+        Usa sempre il <strong>Copper Straight-Through</strong> (cavo dritto, colore nero) per collegare dispositivi di tipo diverso (PC→Switch, Switch→Router, Server→Switch). Packet Tracer 8.x gestisce automaticamente anche i crossover, ma è buona abitudine usare il tipo corretto.
+      </div>
+
+      <h3>Connessioni da effettuare</h3>
+      <table>
+        <thead>
+          <tr><th>Da</th><th>Porta</th><th>A</th><th>Porta</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>DHCP-Server</td><td>FastEthernet0</td><td>Switch 1</td><td>FastEthernet0/1</td></tr>
+          <tr><td>PC-1</td><td>FastEthernet0</td><td>Switch 1</td><td>FastEthernet0/2</td></tr>
+          <tr><td>PC-2</td><td>FastEthernet0</td><td>Switch 1</td><td>FastEthernet0/3</td></tr>
+          <tr><td>Switch 1</td><td>GigabitEthernet0/1</td><td>Router0</td><td>GigabitEthernet0/0</td></tr>
+          <tr><td>Router0</td><td>GigabitEthernet0/1</td><td>Switch 2</td><td>GigabitEthernet0/1</td></tr>
+          <tr><td>PC-3</td><td>FastEthernet0</td><td>Switch 2</td><td>FastEthernet0/1</td></tr>
+          <tr><td>PC-4</td><td>FastEthernet0</td><td>Switch 2</td><td>FastEthernet0/2</td></tr>
+        </tbody>
+      </table>
+
+      <ol class="steps">
+        <li>Clicca sull'icona del cavo (fulmine) nella barra inferiore e seleziona <strong>Copper Straight-Through</strong>.</li>
+        <li>Clicca sul <strong>DHCP-Server</strong>, scegli la porta <code>FastEthernet0</code>, poi clicca su <strong>Switch 1</strong> e seleziona <code>FastEthernet0/1</code>.</li>
+        <li>Ripeti per tutti i collegamenti elencati nella tabella sopra.</li>
+        <li>Verifica che i pallini sulle porte diventino <strong>verdi</strong>. Se rimangono arancioni, attendi qualche secondo; se rimangono rossi controlla il tipo di cavo o la porta selezionata.</li>
+      </ol>
+
+      <div class="img-placeholder">
+        <img src = "collegamenti.png">
+      </div>
+    </section>
+
+    <!-- ══ STEP 05 ══ -->
+    <section class="section" id="step05">
+      <div class="section-header">
+        <span class="step-badge">05</span>
+        <h2>Configurazione del Server DHCP</h2>
+      </div>
+
+      <p>Il server DHCP ha due compiti: possedere un IP statico e distribuire indirizzi dinamici ai client di entrambe le reti. In Packet Tracer il server si configura attraverso la GUI grafica.</p>
+
+      <h3>5.1 – Assegnazione IP statico al server</h3>
+      <ol class="steps">
+        <li>Fai <strong>doppio clic</strong> su <em>DHCP-Server</em> per aprire la finestra di configurazione.</li>
+        <li>Vai nella scheda <strong>Desktop</strong> → <strong>IP Configuration</strong>.</li>
+        <li>Seleziona <strong>Static</strong> e inserisci i seguenti valori:</li>
+      </ol>
+
+      <table>
+        <thead>
+          <tr><th>Campo</th><th>Valore da inserire</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>IP Address</td>
+            <td><span class="ip-placeholder">[ 192.168.10.2 ]</span></td>
+          </tr>
+          <tr>
+            <td>Subnet Mask</td>
+            <td><span class="ip-placeholder">[ 255.255.255.0 ]</span></td>
+          </tr>
+          <tr>
+            <td>Default Gateway</td>
+            <td><span class="ip-placeholder">[ 192.168.10.1 ]</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="img-placeholder">
+        <img src = "indirizzi_server.png">
+      </div>
+
+      <h3>5.2 – Configurazione del servizio DHCP</h3>
+      <ol class="steps">
+        <li>Nella stessa finestra del server, clicca sulla scheda <strong>Services</strong> → <strong>DHCP</strong>.</li>
+        <li>Assicurati che il servizio sia <strong>On</strong> (pulsante verde in alto).</li>
+        <li>Compila il primo pool di indirizzi con i seguenti valori e clicca su <strong>Add</strong> (o <strong>Save</strong>):</li>
+      </ol>
+
+      <table>
+        <thead>
+          <tr><th>Campo</th><th>Valore da inserire</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Pool Name</td><td><code>POOL_RETE1</code></td></tr>
+          <tr>
+            <td>Default Gateway</td>
+            <td><span class="ip-placeholder">[ 192.168.10.1 ]</span></td>
+          </tr>
+          <tr>
+            <td>DNS Server</td>
+            <td><span class="ip-placeholder">[ lasciare vuoto o 0.0.0.0 ]</span></td>
+          </tr>
+          <tr>
+            <td>Start IP Address</td>
+            <td><span class="ip-placeholder">[ 192.168.10.16 ]</span></td>
+          </tr>
+          <tr>
+            <td>Subnet Mask</td>
+            <td><span class="ip-placeholder">[ 255.255.255.0 ]</span></td>
+          </tr>
+          <tr>
+            <td>Maximum number of Users</td>
+            <td><span class="ip-placeholder">[ 16 ]</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ol class="steps" style="counter-reset: stepcount 3">
+        <li>Clicca <strong>Add</strong> per salvare il pool <code>POOL_RETE1</code>.</li>
+        <li>Aggiungi un secondo pool per la Rete 2: clicca ancora su <strong>Add</strong> (o ripeti il procedimento). Compila il secondo pool:</li>
+      </ol>
+
+      <table>
+        <thead>
+          <tr><th>Campo</th><th>Valore da inserire</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Pool Name</td><td><code>POOL_RETE2</code></td></tr>
+          <tr>
+            <td>Default Gateway</td>
+            <td><span class="ip-placeholder">[ 192.168.20.1 ]</span></td>
+          </tr>
+          <tr>
+            <td>Start IP Address</td>
+            <td><span class="ip-placeholder">[ 192.168.20.16 ]</span></td>
+          </tr>
+          <tr>
+            <td>Subnet Mask</td>
+            <td><span class="ip-placeholder">[ 255.255.255.0 ]</span></td>
+          </tr>
+          <tr>
+            <td>Maximum number of Users</td>
+            <td><span class="ip-placeholder">[ 16 ]</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="box success">
+        <div class="box-title">✅ Perché due pool?</div>
+        Il server DHCP identifica la subnet del client richiedente tramite l'IP sorgente della richiesta (o tramite il <em>relay agent IP</em>). Avendo due subnet distinte, occorrono due pool separati con i rispettivi gateway predefiniti. Il pool corretto viene selezionato automaticamente in base all'indirizzo di provenienza della richiesta.
+      </div>
+
+      <div class="img-placeholder">
+        <img src = "pool.png">
+      </div>
+    </section>
+
+    <!-- ══ STEP 06 ══ -->
+    <section class="section" id="step06">
+      <div class="section-header">
+        <span class="step-badge">06</span>
+        <h2>Configurazione del Router 2911</h2>
+      </div>
+
+      <p>Il router è il cuore della topologia: instrada il traffico tra le due reti e, grazie al comando <code>ip helper-address</code>, inoltrerà i broadcast DHCP provenienti dalla Rete 2 verso il server DHCP nella Rete 1.</p>
+
+      <div class="box warning">
+        <div class="box-title">⚠️ Interfacce spente per default</div>
+        Le interfacce del router Cisco 2911 sono in stato <strong>administratively down</strong> per impostazione predefinita. Devi attivarle esplicitamente con il comando <code>no shutdown</code>.
+      </div>
+
+      <h3>6.1 – Accesso alla CLI del router</h3>
+      <ol class="steps">
+        <li>Fai <strong>doppio clic</strong> sul router nel workspace.</li>
+        <li>Clicca sulla scheda <strong>CLI</strong>. Se compare il messaggio <em>"Would you like to enter the initial configuration dialog?"</em>, rispondi <strong>no</strong> e premi Invio.</li>
+        <li>Premi Invio per accedere al prompt <code>&gt;</code> (user EXEC mode).</li>
+      </ol>
+
+      <h3>6.2 – Configurazione interfaccia GigabitEthernet0/0 (Rete 1)</h3>
+
+      <div class="config-block">
+        <div class="config-header">
+          <span class="config-title">Router0 — Configurazione G0/0 (Rete 1)</span>
+          <div class="config-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cmd-comment">! Accede alla modalità privilegiata</span>
+<span class="cmd-prompt">Router&gt;</span> <span class="cmd-key">enable</span>
+<span class="cmd-prompt">Router#</span> <span class="cmd-key">configure terminal</span>
+<span class="cmd-prompt">Router(config)#</span> <span class="cmd-key">interface</span> GigabitEthernet0/0
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">description</span> <span class="cmd-val">Connessione a Rete 1 - 192.168.10.0/24</span>
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">ip address</span> <span class="cmd-ip">[ INSERIRE: 192.168.10.1 ]</span> <span class="cmd-ip">[ INSERIRE: 255.255.255.0 ]</span>
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">no shutdown</span>
+<span class="cmd-comment">! Deve comparire: %LINK-5-CHANGED: Interface GigabitEthernet0/0, changed state to up</span>
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">exit</span></pre>
+      </div>
+
+      <div class="img-placeholder">
+        <img src = "config_router_pt1.png">
+      </div>
+
+      <h3>6.3 – Configurazione interfaccia GigabitEthernet0/1 (Rete 2)</h3>
+
+      <div class="config-block">
+        <div class="config-header">
+          <span class="config-title">Router0 — Configurazione G0/1 (Rete 2)</span>
+          <div class="config-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cmd-prompt">Router(config)#</span> <span class="cmd-key">interface</span> GigabitEthernet0/1
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">description</span> <span class="cmd-val">Connessione a Rete 2 - 192.168.20.0/24</span>
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">ip address</span> <span class="cmd-ip">[ INSERIRE: 192.168.20.1 ]</span> <span class="cmd-ip">[ INSERIRE: 255.255.255.0 ]</span>
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">no shutdown</span>
+<span class="cmd-comment">! Deve comparire: %LINK-5-CHANGED: Interface GigabitEthernet0/1, changed state to up</span>
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">exit</span></pre>
+      </div>
+
+      <h3>6.4 – Salvataggio della configurazione</h3>
+
+      <div class="config-block">
+        <div class="config-header">
+          <span class="config-title">Salvataggio configurazione router</span>
+          <div class="config-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cmd-prompt">Router(config)#</span> <span class="cmd-key">end</span>
+<span class="cmd-prompt">Router#</span> <span class="cmd-key">write memory</span>
+<span class="cmd-comment">! oppure: copy running-config startup-config</span>
+<span class="cmd-comment">! Deve comparire: Building configuration... [OK]</span></pre>
+      </div>
+
+      <div class="img-placeholder">
+        <img src = "config_router_pt2.png">
+      </div>
+    </section>
+
+    <!-- ══ STEP 07 ══ -->
+    <section class="section" id="step07">
+      <div class="section-header">
+        <span class="step-badge">07</span>
+        <h2>Abilitazione del DHCP Relay (<code>ip helper-address</code>)</h2>
+      </div>
+
+      <p>Normalmente un router <strong>blocca i pacchetti broadcast</strong>, tra cui le richieste DHCP Discover inviate dai client (destinazione <code>255.255.255.255</code>). Il comando <code>ip helper-address</code> dice al router di intercettare quei broadcast sull'interfaccia specificata e di <strong>inoltrarli come unicast</strong> verso l'indirizzo del server DHCP.</p>
+
+      <div class="box note">
+        <div class="box-title">📌 Dove si mette ip helper-address?</div>
+        Il comando va inserito sull'interfaccia del router che è <strong>nella stessa rete dei client che non hanno ancora un IP</strong>. Nel nostro caso, i PC-3 e PC-4 sono nella Rete 2, quindi il relay va configurato sull'interfaccia <strong>GigabitEthernet0/1</strong>.
+      </div>
+
+      <div class="config-block">
+        <div class="config-header">
+          <span class="config-title">Router0 — DHCP Relay su G0/1</span>
+          <div class="config-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cmd-prompt">Router#</span> <span class="cmd-key">configure terminal</span>
+<span class="cmd-prompt">Router(config)#</span> <span class="cmd-key">interface</span> GigabitEthernet0/1
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">ip helper-address</span> <span class="cmd-ip">[ INSERIRE: 192.168.10.2 ]</span>
+<span class="cmd-comment">! L'indirizzo è quello del DHCP Server nella Rete 1</span>
+<span class="cmd-prompt">Router(config-if)#</span> <span class="cmd-key">end</span>
+<span class="cmd-prompt">Router#</span> <span class="cmd-key">write memory</span></pre>
+      </div>
+
+      <div class="box success">
+        <div class="box-title">✅ Come funziona il relay</div>
+        Quando un client sulla Rete 2 invia un <strong>DHCP Discover</strong> (broadcast), il router lo riceve su G0/1. Grazie al relay, il router crea un nuovo pacchetto <strong>unicast</strong> con: sorgente = IP dell'interfaccia G0/1 (<code>192.168.20.1</code>), destinazione = IP del server DHCP (<code>192.168.10.2</code>). Il server risponde al router, che poi smista la risposta al client corretto. Il server capisce a quale pool appartiene la richiesta grazie al campo <em>relay agent IP address</em> nel pacchetto.
+      </div>
+
+      <div class="img-placeholder">
+        <img src = "config_router_pt3.png">
+      </div>
+
+      <h3>Verifica rapida della configurazione router</h3>
+
+      <div class="config-block">
+        <div class="config-header">
+          <span class="config-title">Verifica interfacce e relay</span>
+          <div class="config-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cmd-prompt">Router#</span> <span class="cmd-key">show ip interface brief</span>
+<span class="cmd-comment">! Output atteso:
+! GigabitEthernet0/0  192.168.10.1   YES manual up   up
+! GigabitEthernet0/1  192.168.20.1   YES manual up   up</span>
+
+      </div>
+
+      <div class="img-placeholder">
+       <img src = "config_router_pt4.png">
+      </div>
+    </section>
+
+    <!-- ══ STEP 08 ══ -->
+    <section class="section" id="step08">
+      <div class="section-header">
+        <span class="step-badge">08</span>
+        <h2>Configurazione PC della Rete 1 (PC-1 e PC-2)</h2>
+      </div>
+
+      <p>I PC della Rete 1 devono essere impostati su DHCP per ricevere automaticamente l'indirizzo IP dal server.</p>
+
+      <ol class="steps">
+        <li>Fai <strong>doppio clic</strong> su <em>PC-1</em> per aprirne le proprietà.</li>
+        <li>Vai nella scheda <strong>Desktop</strong> → <strong>IP Configuration</strong>.</li>
+        <li>Seleziona l'opzione <strong>DHCP</strong> (il radio button in alto).</li>
+        <li>Attendi qualche secondo: Packet Tracer simulerà il processo DORA. Vedrai comparire un IP nel range <code>192.168.10.16</code>–<code>192.168.10.31</code>, la subnet mask <code>255.255.255.0</code> e il gateway <code>192.168.10.1</code>.</li>
+        <li>Ripeti gli stessi passi per <em>PC-2</em>.</li>
+      </ol>
+
+      <div class="box info">
+        <div class="box-title">🔵 Velocizzare la simulazione</div>
+        Se l'IP non compare subito, clicca sul pulsante <strong>Fast Forward Time</strong> (doppia freccia avanti ▶▶) nella barra in basso. Questo accelera il tempo simulato e forza il completamento del handshake DHCP.
+      </div>
+
+      <div class="img-placeholder">
+        <img src = "pc1_dora.png">
+      </div>
+    </section>
+
+    <!-- ══ STEP 09 ══ -->
+    <section class="section" id="step09">
+      <div class="section-header">
+        <span class="step-badge">09</span>
+        <h2>Configurazione PC della Rete 2 (PC-3 e PC-4)</h2>
+      </div>
+
+      <p>La configurazione è identica a quella dei PC della Rete 1. La differenza è che questi PC riceveranno un indirizzo dalla subnet <code>192.168.20.0/24</code> grazie al relay configurato sul router.</p>
+
+      <ol class="steps">
+        <li>Fai <strong>doppio clic</strong> su <em>PC-3</em>.</li>
+        <li>Vai in <strong>Desktop</strong> → <strong>IP Configuration</strong> e seleziona <strong>DHCP</strong>.</li>
+        <li>Attendi l'assegnazione: il PC riceverà un IP nel range <code>192.168.20.16</code>–<code>192.168.20.31</code>, subnet mask <code>255.255.255.0</code>, gateway <code>192.168.20.1</code>.</li>
+        <li>Ripeti per <em>PC-4</em>.</li>
+      </ol>
+
+      <div class="box note">
+        <div class="box-title">📌 Cosa succede dietro le quinte</div>
+        PC-3 invia un broadcast <strong>DHCP Discover</strong>. Lo Switch 2 lo inonda su tutte le porte. Il router lo riceve su G0/1 e, grazie a <code>ip helper-address</code>, lo incapsula in un pacchetto unicast verso <code>192.168.10.2</code>. Il server DHCP riceve la richiesta, guarda il campo <em>giaddr</em> (<code>192.168.20.1</code>), seleziona il <code>POOL_RETE2</code> e risponde con un indirizzo della Rete 2. Il router riceve la risposta e la inoltra a PC-3.
+      </div>
+
+      <div class="img-placeholder">
+        <img src = "pc3_dora.png">
+      </div>
+    </section>
+
+    <!-- ══ STEP 10 TEST ══ -->
+    <section class="section" id="test">
+      <div class="section-header">
+        <span class="step-badge">10</span>
+        <h2>Test e verifica della rete</h2>
+      </div>
+
+      <p>Questa fase è cruciale: non basta configurare, occorre <strong>verificare</strong> che tutto funzioni correttamente. Esegui tutti i test seguenti.</p>
+
+      <h3>Test A – Verifica assegnazione IP con ipconfig</h3>
+      <ol class="steps">
+        <li>Apri il <em>PC-1</em> → <strong>Desktop</strong> → <strong>Command Prompt</strong>.</li>
+        <li>Digita <code>ipconfig</code> e premi Invio.</li>
+        <li>Verifica che compaia: IP <code>192.168.10.16</code> (o successivo), Mask <code>255.255.255.0</code>, Gateway <code>192.168.10.1</code>.</li>
+        <li>Ripeti per PC-2, PC-3 e PC-4. I PC sulla Rete 2 devono avere IP nella subnet <code>192.168.20.x</code>.</li>
+      </ol>
+
+      <div class="img-placeholder">
+        <img src = "ipconfig3.png">
+      </div>
+
+      <h3>Test B – Ping al gateway</h3>
+      <ol class="steps">
+        <li>Dal Command Prompt di <em>PC-1</em>, digita: <code>ping 192.168.10.1</code></li>
+        <li>Devono arrivare 4 risposte con <code>Reply from 192.168.10.1</code>.</li>
+        <li>Dal Command Prompt di <em>PC-3</em>, digita: <code>ping 192.168.20.1</code></li>
+        <li>Stesso risultato atteso.</li>
+      </ol>
+
+      <h3>Test C – Ping cross-subnet (PC-1 → PC-3)</h3>
+      <ol class="steps">
+        <li>Dal Command Prompt di <em>PC-1</em>, digita: <code>ping 192.168.20.16</code> (o l'IP effettivo di PC-3).</li>
+        <li>Devono arrivare 4 risposte: questo conferma che il router instrada correttamente il traffico tra le due subnet.</li>
+      </ol>
+
+      <div class="img-placeholder">
+        <img src = "ping.png">
+      </div>
+
+      <h3>Test D – Ping al DHCP Server</h3>
+      <ol class="steps">
+        <li>Dal Command Prompt di <em>PC-3</em> (Rete 2), digita: <code>ping 192.168.10.2</code></li>
+        <li>Il ping deve avere successo: conferma che il server DHCP è raggiungibile anche dalla Rete 2.</li>
+      </ol>
+
+      <h3>Test E – Verifica con Simulation Mode</h3>
+      <ol class="steps">
+        <li>Imposta uno dei PC della Rete 2 su <strong>Static IP</strong> (libera un indirizzo del pool) poi rimettilo su DHCP.</li>
+        <li>Attiva la <strong>Simulation Mode</strong> (in basso a destra, icona del cronometro).</li>
+        <li>Filtra per mostrare solo i pacchetti <strong>DHCP</strong> e <strong>UDP</strong>.</li>
+        <li>Premi <strong>Play</strong> e osserva il percorso dei pacchetti DORA attraverso il router verso il server.</li>
+      </ol>
+
+      <div class="img-placeholder">
+        <div class="img-icon">🖼️</div>
+        <div class="img-label">Schermata 14</div>
+        <div class="img-desc">Simulation Mode con i pacchetti DHCP Discover e DHCP Offer visibili mentre attraversano il router dalla Rete 2 verso il DHCP Server nella Rete 1</div>
+        <div class="img-num">SCREENSHOT_14 · Inserire qui l'immagine</div>
+      </div>
+
+      <h3>Riepilogo dei test</h3>
+      <table>
+        <thead>
+          <tr><th>Test</th><th>Comando</th><th>Risultato atteso</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>IP PC-1/PC-2</td><td><code>ipconfig</code></td><td>IP 192.168.10.16-31</td></tr>
+          <tr><td>IP PC-3/PC-4</td><td><code>ipconfig</code></td><td>IP 192.168.20.16-31</td></tr>
+          <tr><td>Ping gateway R1</td><td><code>ping 192.168.10.1</code></td><td>4 reply</td></tr>
+          <tr><td>Ping gateway R2</td><td><code>ping 192.168.20.1</code></td><td>4 reply</td></tr>
+          <tr><td>Cross-subnet</td><td><code>ping &lt;IP PC-3&gt;</code> da PC-1</td><td>4 reply</td></tr>
+          <tr><td>Raggiung. server</td><td><code>ping 192.168.10.2</code> da PC-3</td><td>4 reply</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ══ RIEPILOGO ══ -->
+    <section class="section" id="riepilogo">
+      <div class="section-header">
+        <span class="step-badge">11</span>
+        <h2>Riepilogo e concetti chiave</h2>
+      </div>
+
+      <p>Hai completato con successo la configurazione di una rete con DHCP centralizzato e relay inter-subnet. Ecco i punti principali da ricordare:</p>
+
+      <ul class="checklist">
+        <li><strong>Server DHCP con IP statico</strong>: il server stesso deve avere un indirizzo fisso e conoscere il proprio gateway per poter rispondere alle richieste smistate dal router.</li>
+        <li><strong>Due pool DHCP separati</strong>: ogni subnet necessita di un pool dedicato con il proprio gateway predefinito. Il server associa la richiesta al pool corretto tramite il campo <code>giaddr</code> della richiesta.</li>
+        <li><strong>Interfacce router: <code>no shutdown</code></strong>: le interfacce Cisco sono spente di default; va sempre abilitata manualmente con <code>no shutdown</code>.</li>
+        <li><strong>DHCP Relay (<code>ip helper-address</code>)</strong>: il comando si inserisce sull'interfaccia del router affacciata sulla rete <em>senza</em> server DHCP locale. Converte il broadcast DHCP in unicast verso il server.</li>
+        <li><strong>Verifica sistematica</strong>: usare <code>ipconfig</code>, <code>ping</code> e la Simulation Mode per confermare ogni singolo aspetto della configurazione.</li>
+      </ul>
+
+      <h3>Domande di verifica</h3>
+      <ol class="steps">
+        <li>Perché il server DHCP non può avere un indirizzo assegnato dinamicamente dallo stesso pool che gestisce?</li>
+        <li>Cosa accadrebbe se dimenticassimo di inserire <code>ip helper-address</code> sull'interfaccia G0/1 del router?</li>
+        <li>Qual è il significato del campo <code>giaddr</code> (Gateway IP Address) nel pacchetto DHCP?</li>
+        <li>Potresti aggiungere una terza rete alla topologia senza aggiungere un secondo server DHCP? Come?</li>
+        <li>Cosa cambia nel funzionamento del relay se lo scope DHCP non copre la subnet della Rete 2?</li>
+      </ol>
+
+      <div class="box success">
+        <div class="box-title">🎯 Estensione opzionale</div>
+        Prova ad aggiungere un <strong>DNS Server</strong> statico nella Rete 1 e a configurarne l'IP nei pool DHCP. Poi testa la risoluzione dei nomi aprendo il browser su uno dei PC e navigando verso un indirizzo simbolico.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <strong>Tutorial Packet Tracer</strong> · Reti e Sistemi – Classe 4 · Cisco 2911 · DHCP Relay<br>
+  <span style="margin-top:0.4rem;display:block">Documento didattico a uso interno — versione 1.0</span>
+</footer>
+
+</body>
+</html>
